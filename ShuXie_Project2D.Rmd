@@ -1,0 +1,145 @@
+---
+title: "BIMM143 Project2 Shu Xie"
+output: html_notebook
+---
+
+Scientific Question 
+
+*How similar is the d-limonene protein found in the aroma of lemons compared to the d-limonene protein in the aroma of sweet oranges?* 
+
+Background
+
+*Limonene is a monocyclic monoterpene commonly found in peels of citrus fruits (Eddin et al., 2021). It exists in nature as two enantiomers, (+) and (-) (Morehouse et al., 2017). The (+) or R-enantiomer or D- limonene is responsible for the citrus like aroma in lemons and oranges, despite previous literature stating the (-)-limonene is responsible for the smell of lemons and (+)-limonene for the smell of oranges (Kvittingen et al., 2021). D-limonene is commonly used as a flavor and fragrance addictive in food and consumer products (Nikfar et al., 2014). It has also been shown that orange essential oils have beneficial results in aromatherapy for depressive behaviors (Zhang et al., 2019).*
+
+Scientific Hypothesis
+
+*If there is more than an 80% similarity in the mean protein sequence between the d-limonene protein in Citrus limon and Citrus sinensis, then the aroma of lemons is closely related to the aroma of oranges.*
+
+Data Analysis
+
+*The fasta file of the (+)-limonene synthase protein of Citrus limon and Citrus sinensis were obtained from the NCBI database. Pairwise sequence alignment was done to compare the sequence of the d-limonene protein in lemons and sweet oranges to find differences and similarities between their limonene sequence. Multiple sequence alignment was performed to compare the similarities and dissimilarities of the limonene synthase protein in Citrus sinesis and Citrus limon to other citrust species; Citrus unshiu, Citrus trifolita, Citrus jambhiri, and Citrus japonica.*
+
+Loading in Packages
+
+*The Biostrings package have functions that help manipulate large sets of sequences.*
+*The seqnir package helps analyze and visualize DNA and protein sequence data.*
+*DECIPHER is a tool from the BiocManager package that can be used to decipher and manage the protein sequence data.*
+*The msa package under BiocManager is a tool that allows for multiple sequence alignment of the protein sequences.*
+```{r}
+if (!requireNamespace("Biostrings", quietly=TRUE))
+    install.packages("Biostrings")
+if (!requireNamespace("seqinr", quietly=TRUE))
+    install.packages("seqinr")
+if (!requireNamespace("BiocManager", quietly=TRUE))
+    install.packages("BiocManager")
+BiocManager::install("msa")
+BiocManager::install("DECIPHER")
+library(Biostrings)
+library(seqinr)
+library(DECIPHER)
+library(msa)
+```
+
+To read the FASTA files, we would need to use the function 'read.fasta' which is in the seqinr package. 
+
+Fasta file for (+)-limonene synthase in Citrus sinensis: https://www.ncbi.nlm.nih.gov/protein/AOP12358.2?report=fasta
+
+Fasta file for d-limonene synthase in Citrus limon:  
+https://www.ncbi.nlm.nih.gov/protein/AAM53946.1?report=fasta
+
+```{r}
+#download the fasta files for d-limonene synthase in Citrus sinensis and Citrus limon from the NCBI database
+#read the fasta files
+sinensis <- read.fasta(file = "sinensis.fasta")
+limon <- read.fasta(file = "limon.fasta")
+#uncomment to check the limonene synthase protein for citrus limon and sinensis
+#sinensis
+#limon
+```
+
+Create a dotPlot to compare the two limonene sequences. Use the dotPlot function from the seqnir package. It gives a visual representation of comparison between the two d-linonene protein sequences, with a diagonal indicating a match in the protein sequence.
+```{r}
+dotPlot(sinensis[[1]], limon[[1]])
+```
+
+Perform a pairwise sequence alignment. The comparison between the two limonene protein sequence can help identify regions of similarity or dissimilarity. This is done using the fasta files of the d-limonene synthase protein sequence from NCBI.
+```{r}
+#convert the fasta files into a string
+sinensis_string <- toString(readDNAStringSet("sinensis.fasta", format="fasta", nrec=-1L, skip=0L, seek.first.rec=FALSE, use.names=TRUE, with.qualities=FALSE))
+limon_string <- toString(readDNAStringSet("limon.fasta", format="fasta", nrec=-1L, skip=0L, seek.first.rec=FALSE, use.names=TRUE, with.qualities=FALSE))
+#use the pairwiseAlignment function from the Biostrings package to do a pairwaise sequence alignment between the two sequences
+pairwiseAlignment(sinensis_string, limon_string)
+alg <- pairwiseAlignment(sinensis_string, limon_string)
+seq <- c(alignedPattern(alg), alignedSubject(alg))
+#as.character(seq)
+#use BrosweSeqs function from DECIPHER package to visualize the sequence alignment between the -limonene synthase protein
+BrowseSeqs(seq)
+```
+
+
+Perform multiple sequence alignment to compare the d-limonene synthase protein sequence in Citrus limon to other citrus fruits and the relationship between their limonene proteins. The limonene protein sequence of each citrus fruit is compared to another using pairwise sequence alignment and a score is then given to each comparison.
+Create a heatmap to help visualize how big or small the contrast is between the limonene sequences in different citrus fruits. 
+
+Download the additional FASTA files for other citrus fruit limonene protein. 
+
+Citrus unshiu: https://www.ncbi.nlm.nih.gov/protein/BAD27257.1?report=fasta
+
+Citrus trifoliata: https://www.ncbi.nlm.nih.gov/protein/BAG74774.1?report=fasta
+
+Citrus jambhiri: https://www.ncbi.nlm.nih.gov/protein/BAF73932.1?report=fasta
+
+Citrus japonica: https://www.ncbi.nlm.nih.gov/protein/QBK56505.1?report=fasta
+```{r}
+#read the fasta files
+unshiu <- read.fasta(file = "unshiu.fasta")
+trifoliata <- read.fasta(file = "trifoliata.fasta")
+jambhiri <- read.fasta(file = "jambhiri.fasta")
+japonica <- read.fasta(file = "japonica.fasta")
+#convert the sequence into a string
+unshiu_string <- toString(readDNAStringSet("unshiu.fasta", format="fasta", nrec=-1L, skip=0L, seek.first.rec=FALSE, use.names=TRUE, with.qualities=FALSE))
+trifoliata_string <- toString(readDNAStringSet("trifoliata.fasta", format="fasta", nrec=-1L, skip=0L, seek.first.rec=FALSE, use.names=TRUE, with.qualities=FALSE))
+jambhiri_string <- toString(readDNAStringSet("jambhiri.fasta", format="fasta", nrec=-1L, skip=0L, seek.first.rec=FALSE, use.names=TRUE, with.qualities=FALSE))
+japonica_string <- toString(readDNAStringSet("japonica.fasta", format="fasta", nrec=-1L, skip=0L, seek.first.rec=FALSE, use.names=TRUE, with.qualities=FALSE))
+#concatenate all the sequences into one variable
+sequences <- c(sinensis_string, unshiu_string, limon_string, trifoliata_string, jambhiri_string, japonica_string)
+#create empty matrix for the heatmap
+forheatmap <- matrix(nrow=length(sequences), ncol=length(sequences))
+rownames(forheatmap) <- c("sinensis", "unshiu", "limon", "trifoliata", "jambhiri", "japonica")
+colnames(forheatmap) <- c("sinensis", "unshiu", "limon", "trifoliata", "jambhiri", "japonica")
+#uncomment to check empty matrix
+#forheatmap
+
+#create nested for loop to use the pairwiseAlignment function from the Biostrings package
+for (i in 1:length(sequences)){
+  for (j in 1:length(sequences)){
+  forheatmap[i,j] <- pairwiseAlignment(sequences[i], sequences[j], scoreOnly = TRUE)
+  } 
+}
+forheatmap
+#create the heatmap using the matrix filled in with the pairwiseAlignment scores
+heatmap(forheatmap)
+```
+
+Perform a hierarichal clustering between the different citrus fruits limonene synthases protein. This analysis method provides a visual representation of the relationship of the d-limonene synthase protein found in citrus fruits. Could possibly  help explain why there may or may not be much of a contrast in the d-limonene protein sequence between Citrus limon and Citrus sinensis as their protein sequences could possibly be just too closely related or not as related when compare to other citrus fruits.
+```{r}
+#use the hclust function to analyse the simalrities and dissimalrities between the d-limonene synthases protein in different citrus species. 
+hclust.complete <- hclust(dist(forheatmap), method = "complete")
+plot(hclust.complete, main = "Complete")
+```
+
+There is a very high similarity in the d-limonene synthase protein of the Citrus sinensis and Citrus limon. In the dot plot, we see that it's almost a continuous line, which means the two sequence is extremely similar. When pairwise sequence alignment was performed, there appears to be 27 amino acid point differences out of 384, which is a 93% similarity of the d-limonene protein in Citrus limon and Citrus sinensis. When multiple pairwise alignment was performed with other citrus limonene synthase proteins, the Citrus limon d-limonene has the highest similarities to Citrus japonica limonene protein, then to Citrus jambhiri, then to Citrus sinensis and Citrus unshiu, and lastly to Citrus trifoliata. This relationship can also be seen in the hierarchical clustering tree. 
+
+The Citrus limon d-limonene synthase protein has more than a 90% similarity with the Citrus sinensis d-limonene synthase protein, suggesting it is very likely lemons have an aroma close to that of oranges and thus a similar degree of effectiveness in treating depressive behaviors. Since the d-limonene protein sequence in Citrus limon is closely related to the limonene sequence of Citrus japonica and Citrus jambhiri, there is a likely chance the limonene protein in kumquat and rough lemon have a similar aroma to that of oranges too. Citrus unshiu has the highest similarity with Citrus sinensis, which was used in Zhang et al.'s experiment to test the effect of limonene on chronic unpredictable mild stress mice, which means it is extremely likely the d-limonene from satsuma mandarins also have an effect on treating depression-like behaviors. 
+
+
+References
+
+*Eddin, L. B., Jha, N. K., Meeran, M., Kesari, K. K., Beiram, R., & Ojha, S. (2021). Neuroprotective Potential of Limonene and Limonene Containing Natural Products. Molecules (Basel, Switzerland), 26(15), 4535. https://doi.org/10.3390/molecules26154535*
+
+*Morehouse, B.R., Kumar, R.P., Matos, J.O., Olsen, S.N., Entova, S., & Oprian D.D. (2017). Functional and Structural Characterization of a (+)-Limonene Synthase from Citrus sinensis. Biochemistry, 56 (12), 1706-1715. https://doi.org/10.1021/acs.biochem.7b00143. *
+
+*Kvittingen, L., Sjursnes, B.J., & Schmid, R. (2021). Limonene in Citrus: A String of Unchecked Literature Citings? Journal of Chemical Education, 98 (11), 3600-3607. https://doi.org/10.1021/acs.jchemed.1c00363*
+
+*Nikfar, S., Behboudi, A.F. (2014). Limonene. Encyclopedia of Toxicology (Third Edition), 78-82. https://doi.org/10.1016/B978-0-12-386454-3.00628-X.*
+
+*Zhang, L.L., Yang, Z.Y., Fan, G., Ren, J.N., Yin, K.J., & Pan, S.Y. (2019). Antidepressant-like Effect of Citrus sinensis (L.) Osbeck Essential Oil and Its Main Component Limonene on Mice. Journal of Agricultural and Food Chemistry, 67 (50), 13817-13828. https://doi.org/10.1021/acs.jafc.9b00650*
